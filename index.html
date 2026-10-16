@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Cognitive Evolution Tracker — journal + working-memory assessment lab</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+  <script>
+    /* Apply the saved appearance before first paint (mirror written by js/theme.js)
+       so a themed page never flashes the default look. */
+    (function () {
+      try {
+        var a = JSON.parse(localStorage.getItem('cet-appearance') || '{}');
+        var themes = ['lumen', 'sepia', 'forest', 'blush', 'midnight', 'graphite', 'aurora'];
+        var accents = ['auto', 'indigo', 'ocean', 'teal', 'emerald', 'amber', 'rose', 'violet', 'crimson'];
+        var t = themes.indexOf(a.theme) >= 0 ? a.theme : 'lumen';
+        var ac = accents.indexOf(a.accent) >= 0 ? a.accent : 'auto';
+        var dark = ['midnight', 'graphite', 'aurora'].indexOf(t) >= 0;
+        var r = document.documentElement;
+        r.setAttribute('data-theme', t);
+        r.setAttribute('data-mode', dark ? 'dark' : 'light');
+        r.setAttribute('data-accent', ac);
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+</head>
+<body>
+  <div id="app" class="app">
+    <div class="boot">
+      <div class="boot-logo">🧠</div>
+      <div>Loading your journal…</div>
+    </div>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+  <!-- data layer first: util → db → store → charts/export → ui → views → main -->
+  <script src="js/util.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/view-journal.js"></script>
+  <script src="js/view-progress.js"></script>
+  <script src="js/view-profile.js"></script>
+  <!-- WM Assessment Platform (loads before main.js; boot awaits DOMContentLoaded) -->
+  <script src="js/wm/wm-rng.js"></script>
+  <script src="js/wm/wm-blueprint.js"></script>
+  <script src="js/wm/wm-tasks.js"></script>
+  <script src="js/wm/wm-scoring.js"></script>
+  <script src="js/wm/wm-store.js"></script>
+  <script src="js/wm/wm-analytics.js"></script>
+  <script src="js/wm/wm-export.js"></script>
+  <script src="js/wm/wm-runner.js"></script>
+  <script src="js/wm/wm-tests.js"></script>
+  <script src="js/wm/wm-view.js"></script>
+  <script src="js/wm/wm-view2.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
