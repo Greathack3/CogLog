@@ -35,7 +35,7 @@ window.ViewJournal = (function () {
     if (!Store.state.tickets.length) {
       feed.appendChild(emptyState());
     } else if (!list.length) {
-      feed.appendChild(el('<div class="empty"><div class="empty-icon">🔍</div>' +
+      feed.appendChild(el('<div class="empty"><div class="empty-icon">' + Icons.svg('search') + '</div>' +
         '<h3>No tickets match the current filters</h3>' +
         '<p>Try clearing the search box or widening the date range.</p></div>'));
     } else {
@@ -90,7 +90,7 @@ window.ViewJournal = (function () {
       '<div class="tb-filter"><select data-f="modeId"><option value="">All training modes</option>' +
       modes.map((m) => '<option value="' + esc(m.id) + '"' + (filters.modeId === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') +
       '</select></div>' +
-      '<button class="btn primary tb-new" data-act="new">＋ New daily ticket</button>' +
+      '<button class="btn primary tb-new" data-act="new">' + Icons.svg('plus') + ' New daily ticket</button>' +
       '</div>');
     return t;
   }
@@ -209,15 +209,15 @@ window.ViewJournal = (function () {
       '<div class="ticket-main">' +
       '<div class="ticket-top"><h3>' + esc(U.fmtDate(t.date)) + '</h3>' +
       '<div class="ticket-actions" data-stop>' +
-      '<button class="icon-btn" data-edit="' + esc(t.id) + '" title="Edit">✎</button>' +
-      '<button class="icon-btn" data-dup="' + esc(t.id) + '" title="Duplicate">⧉</button>' +
-      '<button class="icon-btn danger" data-del="' + esc(t.id) + '" title="Delete">🗑</button>' +
+      '<button class="icon-btn" data-edit="' + esc(t.id) + '" title="Edit">' + Icons.svg('pencil') + '</button>' +
+      '<button class="icon-btn" data-dup="' + esc(t.id) + '" title="Duplicate">' + Icons.svg('copy') + '</button>' +
+      '<button class="icon-btn danger" data-del="' + esc(t.id) + '" title="Delete">' + Icons.svg('trash') + '</button>' +
       '</div></div>' +
       '<div class="ticket-chips">' +
-      (sleep.durationMin != null ? '<span class="chip soft">😴 ' + esc(U.fmtDuration(sleep.durationMin)) + ' sleep</span>' : '') +
-      (pa.dailyMinutes != null ? '<span class="chip soft">🏃 ' + esc(pa.dailyMinutes) + ' min' + (pa.type ? ' · ' + esc(pa.type) : '') + '</span>' : '') +
+      (sleep.durationMin != null ? '<span class="chip soft">' + Icons.svg('moon') + ' ' + esc(U.fmtDuration(sleep.durationMin)) + ' sleep</span>' : '') +
+      (pa.dailyMinutes != null ? '<span class="chip soft">' + Icons.svg('activity') + ' ' + esc(pa.dailyMinutes) + ' min' + (pa.type ? ' · ' + esc(pa.type) : '') + '</span>' : '') +
       (chips || '<span class="chip soft">no sessions</span>') +
-      (attCount ? '<span class="chip soft">📎 ' + attCount + '</span>' : '') +
+      (attCount ? '<span class="chip soft">' + Icons.svg('paperclip') + ' ' + attCount + '</span>' : '') +
       '</div>' +
       (highlights.length
         ? '<div class="ticket-highlights">' + highlights.slice(0, 4).map((h) =>
@@ -262,7 +262,7 @@ window.ViewJournal = (function () {
       '<p>Record your first day: sleep, one or more training sessions, and the metrics that matter for each task. ' +
       'Everything you enter stays on this device and feeds automatically into the Progress graphs.</p>' +
       '<div class="empty-actions">' +
-      '<button class="btn primary" data-act="new">＋ New daily ticket</button>' +
+      '<button class="btn primary" data-act="new">' + Icons.svg('plus') + ' New daily ticket</button>' +
       '<button class="btn" data-act="sample">Load sample data (demo)</button>' +
       '</div></div>');
     e.querySelector('[data-act="new"]').addEventListener('click', () => Editor.open(null));

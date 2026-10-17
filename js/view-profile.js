@@ -9,6 +9,12 @@ window.ViewProfile = (function () {
 
   const OCCUPATIONS = ['High-school student', 'University student', 'Teacher', 'Researcher', 'Employed professional', 'Other'];
 
+  /* Health-background options. These fields are rendered inside General information
+     for convenience but are stored in profile.sensitive, so they follow the app's
+     privacy rule: never in shared reports unless the user explicitly opts in. */
+  const ND_STATUS = ['', 'None known', 'Diagnosed', 'Suspected (no formal diagnosis)', 'Currently under assessment', 'Prefer not to say'];
+  const MED_STATUS = ['', 'None known', 'Yes — diagnosed', 'Currently under investigation', 'Prefer not to say'];
+
   const cmp = { baselineId: '', followupId: '' };
 
   function render(host) {
@@ -29,11 +35,12 @@ window.ViewProfile = (function () {
 
   function generalPanel() {
     const p = Store.state.profile || {};
+    const s = p.sensitive || {};
     const snaps = (p.snapshots || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const panel = el('<section class="panel card">' +
       '<div class="panel-head"><div><h2>General information</h2>' +
       '<div class="panel-sub">Used only to contextualise your own records. Nothing here leaves this device unless you export it.</div></div>' +
-      '<div class="panel-controls"><button class="btn" data-act="snapshot">＋ Save as dated snapshot</button></div></div>' +
+      '<div class="panel-controls"><button class="btn" data-act="snapshot">' + Icons.svg('plus') + ' Save as dated snapshot</button></div></div>' +
       '<div class="ed-grid">' +
       '<div class="field"><label>Name or pseudonym</label><input type="text" data-p="name" value="' + esc(p.name || '') + '" placeholder="e.g. Alex"></div>' +
       '<div class="field"><label>Age</label><input type="number" min="1" max="120" data-p="age" value="' + esc(p.age == null ? '' : p.age) + '"></div>' +
@@ -44,6 +51,17 @@ window.ViewProfile = (function () {
       OCCUPATIONS.map((o) => '<option value="' + esc(o) + '"' + (p.occupation === o ? ' selected' : '') + '>' + esc(o) + '</option>').join('') +
       '<option value="__custom"' + (p.occupation && OCCUPATIONS.indexOf(p.occupation) < 0 ? ' selected' : '') + '>Other (type below)…</option></select>' +
       '<input type="text" data-p="occupationCustom" placeholder="custom occupation" value="' + esc(p.occupationCustom || '') + '"></div>' +
+      '<div class="field span2 form-subhead">Health background <span class="badge warn">private</span></div>' +
+      '<div class="field"><label>Neurodevelopmental condition</label><select data-s="ndStatus">' +
+      ND_STATUS.map((v) => '<option value="' + esc(v) + '"' + (s.ndStatus === v ? ' selected' : '') + '>' + esc(v || '— not recorded —') + '</option>').join('') +
+      '</select></div>' +
+      '<div class="field"><label>Details (diagnosed or suspected)</label><input type="text" data-s="ndDetails" placeholder="e.g. ADHD — diagnosed 2019" value="' + esc(s.ndDetails || '') + '"></div>' +
+      '<div class="field"><label>Other medical conditions</label><select data-s="medicalStatus">' +
+      MED_STATUS.map((v) => '<option value="' + esc(v) + '"' + (s.medicalStatus === v ? ' selected' : '') + '>' + esc(v || '— not recorded —') + '</option>').join('') +
+      '</select></div>' +
+      '<div class="field"><label>Details</label><input type="text" data-s="medicalDetails" placeholder="e.g. sleep apnoea, TBI in 2018" value="' + esc(s.medicalDetails || '') + '"></div>' +
+      '<div class="field span2"><div class="hint">Saved with your sensitive information (see the private section below) — never included in shared reports unless you explicitly tick “include sensitive information”. ' +
+      'Recorded for context only; the app never infers ability or expected progress from a diagnosis.</div></div>' +
       '</div>' +
       (snaps.length ? '<div class="snap-list"><h4>Historical snapshots</h4>' + snaps.map((s) =>
         '<div class="snap-row"><span>' + esc(U.fmtDateShort(s.date)) + '</span><strong>' +
@@ -80,9 +98,10 @@ window.ViewProfile = (function () {
     const p = Store.state.profile || {};
     const s = p.sensitive || {};
     const panel = el('<section class="panel card sensitive">' +
-      '<div class="panel-head"><div><h2>🔒 Sensitive / diagnostic information <span class="badge warn">private</span></h2>' +
-      '<div class="panel-sub">Optional. Never appears in shared reports or exports unless you explicitly tick “include sensitive information”. ' +
-      'This app never uses this field to draw conclusions about intelligence or expected progress.</div></div></div>' +
+      '<div class="panel-head"><div><h2>' + Icons.svg('lock') + 'Sensitive / diagnostic information <span class="badge warn">private</span></h2>' +
+      '<div class="panel-sub">Optional. Structured health-background fields (neurodevelopmental condition, other medical conditions) are edited in General information above and stored here. ' +
+      'Nothing here appears in shared reports unless you explicitly tick “include sensitive information”. ' +
+      'This app never uses this information to draw conclusions about intelligence or expected progress.</div></div></div>' +
       '<div class="field"><textarea rows="3" data-s="notes" placeholder="Optional free text — leave blank if you prefer.">' + esc(s.notes || '') + '</textarea></div>' +
       '</section>');
     return panel;
@@ -101,11 +120,11 @@ window.ViewProfile = (function () {
       '<div class="panel-sub">Every note written inside your daily tickets — day, sleep, activity, session, and per-metric notes — ' +
       'compiled into one date-stamped text document.</div></div>' +
       (days.length ? '<div class="panel-controls">' +
-        '<button class="btn" data-act="copynotes" title="Copy the compiled document to the clipboard">⧉ Copy as text</button>' +
-        '<button class="btn" data-act="downloadnotes" title="Download the compiled document as a .txt file">⬇ Download .txt</button></div>' : '') +
+        '<button class="btn" data-act="copynotes" title="Copy the compiled document to the clipboard">' + Icons.svg('copy') + ' Copy as text</button>' +
+        '<button class="btn" data-act="downloadnotes" title="Download the compiled document as a .txt file">' + Icons.svg('download') + ' Download .txt</button></div>' : '') +
       '</div>');
     if (!days.length) {
-      panel.appendChild(el('<div class="empty small"><div class="empty-icon">📝</div>' +
+      panel.appendChild(el('<div class="empty small"><div class="empty-icon">' + Icons.svg('file') + '</div>' +
         '<h4>No notes yet</h4><p>Notes you write on daily tickets — day notes, sleep notes, activity notes, ' +
         'session notes, or per-metric observation notes — appear here as one compiled, date-stamped document.</p></div>'));
       return panel;
@@ -151,14 +170,14 @@ window.ViewProfile = (function () {
     const items = Store.assessmentsOfKind(kind);
     const panel = el('<section class="panel card">' +
       '<div class="panel-head"><div><h2>' + esc(title) + '</h2><div class="panel-sub">' + esc(sub) + '</div></div>' +
-      '<div class="panel-controls"><button class="btn primary" data-add="' + kind + '">＋ Add ' + (kind === 'baseline' ? 'baseline' : 'follow-up') + '</button></div></div>' +
+      '<div class="panel-controls"><button class="btn primary" data-add="' + kind + '">' + Icons.svg('plus') + ' Add ' + (kind === 'baseline' ? 'baseline' : 'follow-up') + '</button></div></div>' +
       '</section>');
     if (items.length) {
       const holder = el('<div class="assess-cards"></div>');
       items.forEach((a) => holder.appendChild(assessCard(a)));
       panel.appendChild(holder);
     } else {
-      panel.appendChild(el('<div class="empty small"><div class="empty-icon">🧪</div><h4>No ' + (kind === 'baseline' ? 'baseline' : 'follow-up') + ' assessments yet</h4>' +
+      panel.appendChild(el('<div class="empty small"><div class="empty-icon">' + Icons.svg('flask') + '</div><h4>No ' + (kind === 'baseline' ? 'baseline' : 'follow-up') + ' assessments yet</h4>' +
         '<p>' + (kind === 'baseline'
           ? 'Record a pre-training test result to anchor your longitudinal comparison.'
           : 'Once you take an assessment after training, record it here to compare against a baseline.') + '</p></div>'));
@@ -173,8 +192,8 @@ window.ViewProfile = (function () {
       '<div class="ac-head"><strong>' + esc(a.testName || '(unnamed test)') + '</strong>' +
       '<span class="badge ' + esc(a.kind) + '">' + (a.kind === 'baseline' ? 'Baseline' : 'Follow-up') + '</span>' +
       '<span class="spacer"></span>' +
-      '<button class="icon-btn" data-editassess="' + esc(a.id) + '" title="Edit">✎</button>' +
-      '<button class="icon-btn danger" data-delassess="' + esc(a.id) + '" title="Delete">🗑</button></div>' +
+      '<button class="icon-btn" data-editassess="' + esc(a.id) + '" title="Edit">' + Icons.svg('pencil') + '</button>' +
+      '<button class="icon-btn danger" data-delassess="' + esc(a.id) + '" title="Delete">' + Icons.svg('trash') + '</button></div>' +
       '<div class="ac-body">' +
       '<div class="ac-score">' + (a.overallScore == null ? '<span class="muted">no overall score</span>' : esc(a.overallScore)) +
       (a.scoreType ? '<span class="ac-scale">' + esc(a.scoreType) + '</span>' : '') + '</div>' +
@@ -190,7 +209,7 @@ window.ViewProfile = (function () {
       (a.preparation ? '<div class="ac-notes"><span class="acn-label">Training preparation</span>' + esc(a.preparation) + '</div>' : '') +
       (a.conclusions ? '<div class="ac-notes"><span class="acn-label">Session conclusions</span>' + esc(a.conclusions) + '</div>' : '') +
       (atts.length ? '<div class="ac-atts">' + atts.map((at) =>
-        '<button class="chip" data-viewatt="' + esc(at.id) + '">📎 ' + esc(at.name) + '</button>').join('') + '</div>' : '') +
+        '<button class="chip" data-viewatt="' + esc(at.id) + '">' + Icons.svg('paperclip') + ' ' + esc(at.name) + '</button>').join('') + '</div>' : '') +
       '</div></div>');
   }
 
@@ -296,7 +315,7 @@ window.ViewProfile = (function () {
       wrap.appendChild(el('<div class="hint mt">Reliable-change analysis is available once you record the test’s reliability (e.g. 0.95) and normative standard deviation (e.g. 15) for at least one of these assessments.</div>'));
     }
 
-    wrap.appendChild(el('<div class="caution mt">⚠️ Interpretation reminders: repeated testing can inflate scores through item familiarity; measurement error, ' +
+    wrap.appendChild(el('<div class="caution mt">' + Icons.svg('alert') + ' Interpretation reminders: repeated testing can inflate scores through item familiarity; measurement error, ' +
       'testing conditions, motivation, and time of day all matter. Training-task gains do not automatically transfer to, or imply, ' +
       'changes in broad cognitive ability.</div>'));
     return wrap;
@@ -486,7 +505,7 @@ window.AssessmentEditor = (function () {
       // attachments
       const attWrap = el('<div class="att-block"><div class="att-head">Supporting evidence (reports, screenshots)</div>' +
         '<div class="thumbs" data-thumbs></div>' +
-        '<label class="upload-btn">📎 Attach files<input type="file" multiple accept="image/*,.pdf" data-upload hidden></label></div>');
+        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files<input type="file" multiple accept="image/*,.pdf" data-upload hidden></label></div>');
       function renderAtts() {
         const host = attWrap.querySelector('[data-thumbs]');
         host.innerHTML = '';

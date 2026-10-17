@@ -55,7 +55,7 @@ window.ViewWM = (function () {
   function statusChip(status) {
     const map = {
       completed: ['✔ Completed', 'wm-ok'],
-      in_progress: ['⏸ Resumable', 'wm-open'],
+      in_progress: [Icons.svg('pause') + ' Resumable', 'wm-open'],
       incomplete: ['◐ Ended early', 'wm-warn']
     };
     const m = map[status] || [esc(status), ''];

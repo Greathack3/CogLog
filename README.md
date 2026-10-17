@@ -54,7 +54,7 @@ export for large journals). The storage mode is always shown in the footer and i
 | What leaves the device | Nothing, unless *you* click an export button |
 | What backs it up | Nothing automatically — see *Backups* below |
 
-### ⚠️ Important honesty about local storage
+### Important honesty about local storage
 
 Browser-local data is **not protected against device failure, browser-profile reset, or "clear
 browsing data."** This is stated in the app footer and in *Data & Backup*, not buried.
@@ -175,7 +175,9 @@ of many different metrics — including repeated sessions of the same mode on on
   training frequency, time of training) plus one graph per workout type (recorded minutes
   over time, one per workout), association explorer with caveat, assessment timeline.
   Time ranges: 7 / 30 / 90 days, 6 months, 1 year, all, custom.
-- **Profile & Assessments** — general info + dated snapshots, lifestyle *plans* (kept distinct from
+- **Profile & Assessments** — general info + dated snapshots (including structured
+  *health background* fields: diagnosed/suspected neurodevelopmental condition and other
+  medical conditions, stored with sensitive data), lifestyle *plans* (kept distinct from
   actual behaviour), private sensitive section, baseline and post-training assessment panels
   with dedicated text fields (baseline: *training preparation*; follow-up: *session
   conclusions* — e.g. premises per RRT component or the achieved Executive N-back level),
@@ -191,10 +193,16 @@ of many different metrics — including repeated sessions of the same mode on on
 - **Settings** — manage training modes (colour-consistent across all graphs) and metric definitions.
 - **Appearance** — seven curated themes (four light: Lumen, Sepia, Forest, Blush; three dark:
   Midnight, Graphite, Aurora) with signature accents, plus nine accent-colour overrides.
-  Chosen via the 🎨 Appearance button in the top bar; applies instantly, is persisted
+  Chosen via the Appearance button (palette icon) in the top bar; applies instantly, is persisted
   (IndexedDB meta record + localStorage mirror applied by a pre-paint script, so no flash
   of the default look), and is cosmetic only — it never rides along in data backups and is
   untouched by data erasure.
+- **Iconography** — all decorative emoji have been replaced with a hand-drawn inline-SVG
+  icon set (`js/icons.js`): stroke pictograms in one consistent academic/clinical style
+  (book, chart, user, flask, palette, database, paperclip, moon, activity, lock, alert,
+  volume, pause, maximize, …), sized in `em` so they scale with their context and coloured
+  via `currentColor` so they follow the active theme. The brand brain (🧠) is the one
+  deliberate exception and stays as-is.
 
 ---
 
@@ -285,7 +293,7 @@ records and delete them; nothing mixes into your data.
 
 **Journal app**
 
-- All 12 journal JS modules pass `node --check` (23 files including the WM platform).
+- All 13 journal JS modules pass `node --check` (24 files including the WM platform).
 - Runtime smoke test: all 3 views + all 5 modals render with **zero console errors** and no
   `[object …]`/`undefined` leaks.
 - Data-integrity test: every session→ticket, observation→session, observation→metric link valid.
@@ -321,6 +329,18 @@ records and delete them; nothing mixes into your data.
   cells (a new workout type appears as its own graph, minutes round-trip), journal chips show
   `min · workout`, the daily CSV exports `pa_workout_minutes,pa_type,pa_intensity`, all
   workout-chart SVG attributes stay finite, and `WMTests.run()` remains **32/32 green**.
+- Health-background fields: the General-information section carries a neurodevelopmental
+  status select (diagnosed / suspected / under assessment / none known / prefer not to say)
+  and an other-medical-conditions select, each with a free-text details input. Both live in
+  `profile.sensitive`, so the shared report omits them by default and prints them only when
+  “include sensitive information” is ticked (verified in the generated Markdown), and a
+  merge-import treats any recorded value as a meaningful local profile. Values survive the
+  per-field change → re-render round trip.
+- Iconography: every interface emoji replaced by the `Icons.svg()` set — verified by
+  scanning all UI files for pictographic codepoints (only the brand brain 🧠 and
+  typographic marks ▲▼✔✘✕◐○ remain); icons render across all 4 tabs and all 8 WM
+  sections with zero console errors, including the WM stage's audio cue and pause/full-screen
+  controls.
 
 **WM assessment platform**
 
@@ -332,6 +352,10 @@ records and delete them; nothing mixes into your data.
 - Interruption/resume verified across an actual page reload: the open session, its cursor,
   completed trials, and familiarization status all survived; resume recorded the interruption
   and finished the session.
+- Runner close-race fix: closing the stage during the pre-session "Begin" prompt no longer
+  throws on the already-nulled session state or leaves a stuck overlay — the resolver cleanup
+  is guarded like every other wait-loop in the runner (verified: open stage → `close()` →
+  overlay removed, zero console errors).
 - Config-versioning verified through the UI form (edit → new version; no-op save → no version;
   temporary test version rolled back).
 - Export JSON/CSV + import roundtrip verified with real session data (duplicates skipped, counts
@@ -352,6 +376,7 @@ cognitive-evolution-tracker/
 │   ├── charts.js         dependency-free SVG chart + timeline engine
 │   ├── export.js         JSON/CSV export, import/merge, shared report
 │   ├── ui.js             toasts, modals, confirmations, image viewer
+│   ├── icons.js          inline SVG icon set (academic style; replaces decorative emoji)
 │   ├── theme.js          appearance: curated themes, accent overrides, picker modal
 │   ├── editor.js         daily ticket editor (sessions, metrics, sleep, PA, attachments)
 │   ├── view-journal.js   dashboard feed, search, filters, summary

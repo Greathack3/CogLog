@@ -227,14 +227,14 @@ window.Editor = (function () {
         '<div class="field"><label>Duration (min)</label><input type="number" min="0" max="1440" data-sf="durationMin" value="' + (s.durationMin == null ? '' : s.durationMin) + '"><div class="hint" data-dur-hint></div></div>' +
         '<div class="field"><label>Training mode</label><select data-sf="modeId"><option value="">— select mode —</option>' +
         modes.map((mo) => '<option value="' + esc(mo.id) + '"' + (s.modeId === mo.id ? ' selected' : '') + '>' + esc(mo.name) + (mo.archived ? ' (archived)' : '') + '</option>').join('') +
-        '<option value="__new">＋ New training mode…</option></select></div>' +
+        '<option value="__new">+ New training mode…</option></select></div>' +
         '<div class="field"><label>Session date</label><input type="date" data-sf="date" value="' + esc(s.date || draft.ticket.date) + '"><div class="hint">Defaults to the ticket date; override for cross-midnight or corrected sessions.</div></div>' +
         '<div class="field span2"><label>Session notes</label><textarea rows="2" data-sf="notes" placeholder="Difficulty, unusual circumstances, subjective experience, trial counts…">' + esc(s.notes || '') + '</textarea></div>' +
         '</div>' +
         '<div class="obs-block"><div class="obs-head">Performance metrics <span class="hint-inline">recorded for this session only</span></div><div class="obs-list"></div>' +
         '<button class="btn tiny add" type="button" data-act="add-obs">+ Add metric</button></div>' +
         '<div class="att-block"><div class="att-head">Session screenshots &amp; files</div><div class="thumbs" data-thumbs></div>' +
-        '<label class="upload-btn">📎 Attach files<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label></div>' +
+        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label></div>' +
         '</div>');
 
       const obsList = card.querySelector('.obs-list');
@@ -345,7 +345,7 @@ window.Editor = (function () {
 
     function ticketAttBody() {
       const wrap = el('<div><div class="thumbs" data-thumbs></div>' +
-        '<label class="upload-btn">📎 Attach files to this day<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label>' +
+        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files to this day<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label>' +
         '<div class="hint mt">Images are downscaled and stored inside your browser with the rest of the journal.</div></div>');
       renderThumbs(wrap, 'ticket', draft.ticket);
       return wrap;

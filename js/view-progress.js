@@ -36,7 +36,7 @@ window.ViewProgress = (function () {
     const wrap = el('<div class="page progress"></div>');
     wrap.appendChild(rangeBar());
     if (!Store.state.observations.length && !Store.state.tickets.length) {
-      wrap.appendChild(el('<div class="empty big"><div class="empty-icon">📈</div>' +
+      wrap.appendChild(el('<div class="empty big"><div class="empty-icon">' + Icons.svg('chart') + '</div>' +
         '<h3>Nothing to graph yet</h3><p>Record a few training sessions in the Journal and your performance, sleep, and activity data will appear here automatically.</p></div>'));
       host.appendChild(wrap);
       return;
@@ -158,7 +158,7 @@ window.ViewProgress = (function () {
         '<option value="' + esc(l.key) + '"' + (l.key === cfg.lifeMetric ? ' selected' : '') + '>' + esc(l.label) + '</option>').join('') + '</select>' +
       '</div></div>' +
       '<div class="chart-host" data-chart="assoc"></div>' +
-      '<div class="caution">⚠️ This overlay is <strong>descriptive only</strong>. Two lines moving together does not establish that the lifestyle variable caused the performance change — sleep, practice, motivation, and time all co-vary.</div>' +
+      '<div class="caution">' + Icons.svg('alert') + ' This overlay is <strong>descriptive only</strong>. Two lines moving together does not establish that the lifestyle variable caused the performance change — sleep, practice, motivation, and time all co-vary.</div>' +
       '</section>');
     return panel;
   }

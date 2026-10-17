@@ -184,7 +184,7 @@ window.Exporter = (function () {
       const hasLocalProfile = !!(p.name || (p.snapshots && p.snapshots.length) || p.occupation ||
         p.occupationCustom || p.age || p.gender ||
         (p.plans && Object.values(p.plans).some((v) => v)) ||
-        (p.sensitive && p.sensitive.notes));
+        (p.sensitive && Object.values(p.sensitive).some((v) => v)));
       if (opts.replaceAll || opts.overwriteConflicts || !hasLocalProfile) {
         await DB.setMeta('profile', d.profile);
       }
@@ -207,7 +207,17 @@ window.Exporter = (function () {
     lines.push('- Name/pseudonym: ' + (p.name || '(not set)'));
     lines.push('- Gender: ' + (p.gender || '(not set)'));
     lines.push('- Occupation: ' + (p.occupation || '(not set)'));
-    if (inc && p.sensitive && p.sensitive.notes) lines.push('- Private notes: ' + p.sensitive.notes);
+    if (inc && p.sensitive) {
+      if (p.sensitive.ndStatus || p.sensitive.ndDetails) {
+        lines.push('- Neurodevelopmental condition: ' + (p.sensitive.ndStatus || '(not set)') +
+          (p.sensitive.ndDetails ? ' — ' + p.sensitive.ndDetails : ''));
+      }
+      if (p.sensitive.medicalStatus || p.sensitive.medicalDetails) {
+        lines.push('- Other medical conditions: ' + (p.sensitive.medicalStatus || '(not set)') +
+          (p.sensitive.medicalDetails ? ' — ' + p.sensitive.medicalDetails : ''));
+      }
+      if (p.sensitive.notes) lines.push('- Private notes: ' + p.sensitive.notes);
+    }
     if (!inc) lines.push('- (Private/sensitive fields excluded — enable “include sensitive information” to add them.)');
     lines.push('');
     lines.push('## Training log (' + Store.state.tickets.length + ' days, ' + Store.state.sessions.length + ' sessions)');

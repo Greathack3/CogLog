@@ -70,8 +70,8 @@ window.WMRunner = (function () {
       '<span class="wm-stage-title" data-title>Assessment</span>' +
       '<span class="wm-stage-progress" data-progress></span>' +
       '<span class="wm-stage-actions">' +
-      '<button class="btn tiny" data-act="fullscreen" title="Toggle full screen">⛶ Full screen</button>' +
-      '<button class="btn tiny" data-act="pause">⏸ Pause</button>' +
+      '<button class="btn tiny" data-act="fullscreen" title="Toggle full screen">' + Icons.svg('maximize') + ' Full screen</button>' +
+      '<button class="btn tiny" data-act="pause">' + Icons.svg('pause') + ' Pause</button>' +
       '</span></header>' +
       '<main class="wm-stage-body" data-body></main>' +
       '<footer class="wm-stage-foot" data-foot></footer>' +
@@ -276,8 +276,10 @@ window.WMRunner = (function () {
       const done = (r) => { cleanup(); resolve(r); };
       const onClosed = () => done('closed');
       function cleanup() {
-        S.resolvers.delete(onClosed);
-        if (S) S.onKey = null;
+        if (S) {
+          S.resolvers.delete(onClosed);
+          S.onKey = null;
+        }
       }
       S.resolvers.add(onClosed);
       wrap.querySelector('[data-begin]').addEventListener('click', () => done('begin'));
@@ -812,7 +814,7 @@ window.WMRunner = (function () {
       if (modality === 'auditory') {
         const spoken = speak(item);
         itemHost.classList.add('audible');
-        itemHost.textContent = '🔊';
+        itemHost.innerHTML = Icons.svg('volume');
         r = await Promise.all([spoken, wait(Math.max(cfg.stimulusMs, 500), 'stimulus')]);
       } else {
         itemHost.textContent = item;

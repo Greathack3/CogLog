@@ -1075,3 +1075,21 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.84rem; color: var(--ink-2); white-space: pre-wrap;
 }
 .cmp-ctx strong { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-ink); margin-bottom: 3px; }
+
+/* ---------- icons (academic-style replacement for the former emoji glyphs) ----------
+   All icons are inline SVGs from js/icons.js: stroke=currentColor, default size 1em.
+   Flex containers (.btn, .chip, .upload-btn) already space icons via their gap. */
+.icn { display: inline-block; vertical-align: -0.14em; flex: none; }
+.icon-btn .icn { width: 15px; height: 15px; vertical-align: middle; }
+.tab .tab-icon .icn { width: 17px; height: 17px; vertical-align: -3px; }
+.empty-icon .icn { width: 40px; height: 40px; }
+.caution .icn, .storage-info .strong .icn { color: var(--warn); margin-right: 5px; vertical-align: -0.25em; }
+.panel-head h2 .icn { vertical-align: -0.24em; margin-right: 2px; }
+.wm-item .icn { vertical-align: -0.15em; }
+
+/* ---------- form sub-section divider (e.g. health background) ---------- */
+.form-subhead {
+  align-self: end; padding-bottom: 6px; margin-top: 10px;
+  font-size: 0.72rem; font-weight: 680; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); border-bottom: 1px solid var(--line-2);
+}

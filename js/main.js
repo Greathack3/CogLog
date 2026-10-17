@@ -4,10 +4,10 @@
   const { el, esc } = U;
 
   const VIEWS = {
-    journal: { label: 'Journal', icon: '📔', render: () => ViewJournal.render },
-    progress: { label: 'Progress', icon: '📈', render: () => ViewProgress.render },
-    profile: { label: 'Profile & Assessments', icon: '🧑‍🔬', render: () => ViewProfile.render },
-    wm: { label: 'WM Assessment', icon: '🧪', render: () => ViewWM.render }
+    journal: { label: 'Journal', icon: 'book', render: () => ViewJournal.render },
+    progress: { label: 'Progress', icon: 'chart', render: () => ViewProgress.render },
+    profile: { label: 'Profile & Assessments', icon: 'user', render: () => ViewProfile.render },
+    wm: { label: 'WM Assessment', icon: 'flask', render: () => ViewWM.render }
   };
 
   let current = 'journal';
@@ -60,15 +60,15 @@
       '<span class="brand-sub">training journal · working-memory assessment lab</span></div></div>' +
       '<nav class="tabs" role="tablist"></nav>' +
       '<div class="topbar-right">' +
-      '<button class="btn" data-act="appearance" title="Choose a theme and accent colour">🎨 Appearance</button>' +
-      '<button class="btn" data-act="backup" title="Export, import, and storage info">💾 Data &amp; Backup</button>' +
+      '<button class="btn" data-act="appearance" title="Choose a theme and accent colour">' + Icons.svg('palette') + ' Appearance</button>' +
+      '<button class="btn" data-act="backup" title="Export, import, and storage info">' + Icons.svg('database') + ' Data &amp; Backup</button>' +
       '</div>' +
       '</header>');
 
     const nav = header.querySelector('.tabs');
     Object.keys(VIEWS).forEach((key) => {
       const b = el('<button class="tab" data-tab="' + key + '" role="tab">' +
-        '<span class="tab-icon">' + VIEWS[key].icon + '</span>' + esc(VIEWS[key].label) + '</button>');
+        '<span class="tab-icon">' + Icons.svg(VIEWS[key].icon) + '</span>' + esc(VIEWS[key].label) + '</button>');
       b.addEventListener('click', () => { location.hash = '#' + key; });
       nav.appendChild(b);
     });
@@ -94,7 +94,7 @@
     if (!badge) return;
     const mode = Store.state.storageMode;
     const n = Store.state.tickets.length;
-    badge.textContent = (mode === 'idb' ? '💾 IndexedDB' : '💾 localStorage (fallback)') + ' · ' +
+    badge.innerHTML = Icons.svg('database') + ' ' + (mode === 'idb' ? 'IndexedDB' : 'localStorage (fallback)') + ' · ' +
       n + ' ticket' + (n === 1 ? '' : 's') + ' · ' + Store.state.attachments.length + ' file(s)';
   }
 
@@ -135,7 +135,7 @@
       '<p>' + (mode === 'idb'
         ? 'Your journal is stored locally in this browser profile using IndexedDB, which holds your tickets, sessions, metrics, assessments, and compressed image attachments.'
         : 'IndexedDB was unavailable, so records are kept in localStorage. This has a smaller size limit — prefer the JSON export for large journals, and consider serving the app over http://localhost for full IndexedDB support.') +
-      '</p><p class="strong">⚠️ Local-only means local-only: nothing is uploaded, but nothing is backed up either. Clearing browser data, ' +
+      '</p><p class="strong">' + Icons.svg('alert') + ' Local-only means local-only: nothing is uploaded, but nothing is backed up either. Clearing browser data, ' +
       'a profile reset, or device failure can erase it. Export a JSON backup after every meaningful stretch of logging.</p></div>' +
 
       '<div class="count-grid">' +
@@ -144,8 +144,8 @@
 
       '<h4>Export</h4>' +
       '<div class="btn-row">' +
-      '<button class="btn primary" data-act="export-json">⬇ Full JSON backup (incl. images)</button>' +
-      '<button class="btn" data-act="export-json-nofiles">⬇ JSON (data only, no images)</button>' +
+      '<button class="btn primary" data-act="export-json">' + Icons.svg('download') + ' Full JSON backup (incl. images)</button>' +
+      '<button class="btn" data-act="export-json-nofiles">' + Icons.svg('download') + ' JSON (data only, no images)</button>' +
       '</div>' +
       '<div class="btn-row">' +
       '<button class="btn" data-act="csv-obs">CSV: observations</button>' +
@@ -154,13 +154,13 @@
       '<button class="btn" data-act="csv-metrics">CSV: metric definitions</button>' +
       '</div>' +
       '<div class="btn-row">' +
-      '<button class="btn" data-act="shared-report">📄 Shared report (Markdown)</button>' +
+      '<button class="btn" data-act="shared-report">' + Icons.svg('file') + ' Shared report (Markdown)</button>' +
       '<label class="toggle"><input type="checkbox" data-act="inc-sensitive"> Include sensitive profile information</label>' +
       '</div>' +
 
       '<h4>Import / restore</h4>' +
       '<div class="btn-row">' +
-      '<button class="btn" data-act="import">⬆ Import JSON backup…</button>' +
+      '<button class="btn" data-act="import">' + Icons.svg('upload') + ' Import JSON backup…</button>' +
       '<input type="file" accept="application/json,.json" data-import hidden>' +
       '</div>' +
       '<div class="hint">Import merges records by id. Conflicting records (same id, different content) are skipped by default so nothing is silently overwritten.</div>' +
@@ -273,7 +273,7 @@
       function modesSection() {
         const list = Store.state.modes.slice().sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0));
         const sec = h('<section><div class="panel-head"><h3>Training modes</h3>' +
-          '<button class="btn tiny" data-act="addmode">＋ Add mode</button></div>' +
+          '<button class="btn tiny" data-act="addmode">' + Icons.svg('plus') + ' Add mode</button></div>' +
           '<div class="def-list">' + list.map((mo) =>
             '<div class="def-row' + (mo.archived ? ' archived' : '') + '">' +
             '<i class="dot big" style="background:' + e(mo.color || '#888') + '"></i>' +
@@ -281,14 +281,14 @@
             '<input data-mode-color="' + e(mo.id) + '" type="color" value="' + e(mo.color || '#4f7cff') + '" title="Colour (consistent across all graphs)">' +
             '<span class="badge soft">' + (mo.archived ? 'archived' : Store.state.sessions.filter((s) => s.modeId === mo.id).length + ' sessions') + '</span>' +
             '<button class="btn tiny" data-archmode="' + e(mo.id) + '">' + (mo.archived ? 'Restore' : 'Archive') + '</button>' +
-            '<button class="icon-btn danger" data-delmode="' + e(mo.id) + '" title="Delete">🗑</button></div>').join('') +
+            '<button class="icon-btn danger" data-delmode="' + e(mo.id) + '" title="Delete">' + Icons.svg('trash') + '</button></div>').join('') +
           '</div><div class="hint mt">Archiving keeps historical records intact; a mode with sessions can’t be hard-deleted.</div></section>');
         return sec;
       }
       function metricsSection() {
         const list = Store.state.metrics.slice().sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0));
         const sec = h('<section><div class="panel-head"><h3>Metric definitions</h3>' +
-          '<button class="btn tiny" data-act="addmetric">＋ Add metric</button></div>' +
+          '<button class="btn tiny" data-act="addmetric">' + Icons.svg('plus') + ' Add metric</button></div>' +
           '<div class="def-list">' + list.map((me) =>
             '<div class="def-row metric' + (me.archived ? ' archived' : '') + '">' +
             '<div class="def-main"><strong>' + e(me.name) + '</strong> ' +
