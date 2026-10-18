@@ -91,7 +91,7 @@ The JSON export envelope is stable and documented:
   "includeAttachments": true,
   "includeSensitive": false,
   "data": {
-    "profile":  { ... },            // includes .snapshots[], .plans{}, .sensitive{}
+    "profile":  { ... },            // includes .snapshots[], .plans{}, .trainingPrep{}, .sensitive{}
     "modes":    [ { id, name, color, archived, ... } ],
     "metrics":  [ { id, name, unit, dataType, direction, min, max, target,
                     modeIds[], description, currentVersion, versions[] } ],
@@ -112,13 +112,16 @@ The JSON export envelope is stable and documented:
 `createdAt`/`updatedAt` are ISO timestamps (when it was *entered*). `date` is the **event date**
 (when it *happened*). Graphs always use `date`, never `createdAt`.
 
-Assessments carry two dedicated free-text fields: `preparation` (baseline — how the user prepared
-for the training before testing) and `conclusions` (follow-up — what the training sessions
-concluded, e.g. premises per RRT component or the overall Executive N-back level achieved).
-Both are optional, stored as `null` when empty, included in the JSON backup and the
-assessments CSV (`preparation`, `conclusions` columns), and surfaced on the profile cards,
-the side-by-side comparison, and the shared report. Older records simply lack the fields —
-readers must treat them as optional.
+Assessments carry a dedicated free-text field `conclusions` (follow-up — what the training
+sessions concluded, e.g. premises per RRT component or the overall Executive N-back level
+achieved). It is optional, stored as `null` when empty, included in the JSON backup and the
+assessments CSV, and surfaced on the profile cards, the side-by-side comparison, and the
+shared report. Training preparation is **no longer an assessment field**: it lives in
+`profile.trainingPrep` (`plan`, `conditions`, `goals`, `startDate`) and is edited in its own
+Training-preparation panel. Older records and imported backups may still carry a
+`preparation` value — it stays untouched on the record and in JSON backups, is never
+surfaced in the UI, and on first load any legacy values are carried over into the panel's
+plan field (dated, one entry per assessment). Readers must treat both fields as optional.
 
 ---
 
@@ -179,12 +182,22 @@ of many different metrics — including repeated sessions of the same mode on on
   *health background* fields: diagnosed/suspected neurodevelopmental condition and other
   medical conditions, stored with sensitive data), lifestyle *plans* (kept distinct from
   actual behaviour), private sensitive section, baseline and post-training assessment panels
-  with dedicated text fields (baseline: *training preparation*; follow-up: *session
-  conclusions* — e.g. premises per RRT component or the achieved Executive N-back level),
-  side-by-side comparison with absolute/percentage difference (percentage only on true-zero
-  scales), elapsed time, intervening session count, subtest deltas, the selected baseline's
-  preparation / follow-up's conclusions as context, and an optional **Reliable Change Index**
-  analysis with its assumptions spelled out.
+  (follow-up carries a *session conclusions* text field — e.g. premises per RRT component
+  or the achieved Executive N-back level), side-by-side comparison with absolute/percentage
+  difference (percentage only on true-zero scales), elapsed time, intervening session count,
+  subtest deltas, the current training-preparation plan / follow-up's conclusions as context,
+  and an optional **Reliable Change Index** analysis with its assumptions spelled out.
+- **Training preparation panel** — an independent planning panel (plan & schedule,
+  preparation routine & conditions, goals for the block, plan start date) that replaces the
+  old preparation note inside baseline assessments: preparation is now organised separately
+  from any assessment. Profiles saved before the panel existed are migrated automatically,
+  carrying legacy baseline preparation notes into the plan field (the stored assessment
+  records themselves are never modified), and the plan feeds the comparison context and the
+  shared report.
+- **Assessment image gallery** — every image uploaded as supporting evidence inside baseline
+  and post-training assessments is displayed directly (thumbnail grid, grouped by assessment
+  kind and date) in one panel on the Profile page; click any image for the full-size viewer.
+  Non-image attachments appear as file chips.
 - **Ticket notes summary** — every note inside every daily ticket (day notes, sleep notes,
   physical-activity notes, per-session notes, per-observation notes) compiled into one
   date-stamped text document on the Profile page, with *copy to clipboard* and
@@ -309,10 +322,23 @@ records and delete them; nothing mixes into your data.
   physical-activity, session, and observation notes all included with date + entry stamps,
   chronological order, note-less days excluded; copy-to-clipboard and `.txt` download capture
   the exact 553-char document; the shared report's *Ticket notes* section matches the panel.
-- Assessment fields: baseline *training preparation* and follow-up *session conclusions* render
-  conditionally on kind (flipping the kind select swaps the field and preserves uncommitted
-  typed text), persist as `null` when empty, and appear on the cards, the side-by-side
-  comparison, the JSON backup, the assessments CSV, and the shared report.
+- Assessment fields: follow-up *session conclusions* render only for the follow-up kind
+  (flipping the kind select swaps the field/hint and preserves uncommitted typed text),
+  persist as `null` when empty, and appear on the cards, the side-by-side comparison, the
+  JSON backup, the assessments CSV, and the shared report. The baseline editor instead shows
+  a pointer to the Training-preparation panel; legacy `preparation` values on stored
+  assessments are never rendered or overwritten.
+- Training preparation panel: an independent profile-level panel (plan & schedule,
+  preparation routine & conditions, goals, plan start date) saved under
+  `profile.trainingPrep`; verified the one-time migration (a legacy baseline assessment with
+  a preparation note → panel plan field carries a dated entry, the assessment record itself
+  keeps its value, a second reload does not re-migrate); comparison context and the shared
+  report's *Training preparation* section reflect the panel; assessments CSV no longer has a
+  `preparation` column.
+- Assessment image gallery: baseline + post-training images uploaded via the assessment
+  editor render as thumbnail grids grouped by kind and date; clicking opens the full-size
+  viewer; non-image attachments show as file chips; an empty state appears with no evidence;
+  deleting an assessment removes its row from the gallery.
 - Appearance: all 7 themes verified token-by-token (backgrounds, ink, lines, accents,
   `--on-accent`, topbar tint); accent overrides flip correctly between light and dark modes;
   the choice survives a full reload via the pre-paint localStorage mirror and the IndexedDB

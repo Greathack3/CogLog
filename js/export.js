@@ -65,11 +65,11 @@ window.Exporter = (function () {
         a.scaleMax == null ? '' : a.scaleMax, a.normSD == null ? '' : a.normSD,
         a.reliability == null ? '' : a.reliability, a.gLoading == null ? '' : a.gLoading,
         (a.subtests || []).map((s) => s.name + '=' + s.value).join('; '),
-        (a.notes || ''), (a.preparation || ''), (a.conclusions || ''), a.createdAt || '', a.updatedAt || ''
+        (a.notes || ''), (a.conclusions || ''), a.createdAt || '', a.updatedAt || ''
       ]);
     download('cet-assessments-' + stamp() + '.csv', toCSV(
       ['kind', 'test_name', 'date', 'score_type', 'overall_score', 'scale_min', 'scale_max',
-        'norm_sd', 'reliability', 'g_loading', 'subtests', 'notes', 'preparation', 'conclusions',
+        'norm_sd', 'reliability', 'g_loading', 'subtests', 'notes', 'conclusions',
         'created_at', 'updated_at'], rows
     ), 'text/csv;charset=utf-8');
   }
@@ -220,6 +220,15 @@ window.Exporter = (function () {
     }
     if (!inc) lines.push('- (Private/sensitive fields excluded — enable “include sensitive information” to add them.)');
     lines.push('');
+    const tp = p.trainingPrep || {};
+    if (tp.startDate || tp.plan || tp.conditions || tp.goals) {
+      lines.push('## Training preparation');
+      if (tp.startDate) lines.push('- Plan start date: ' + tp.startDate);
+      if (tp.plan) lines.push('- Plan & schedule: ' + String(tp.plan).replace(/\n/g, '\n    '));
+      if (tp.conditions) lines.push('- Preparation routine & conditions: ' + String(tp.conditions).replace(/\n/g, '\n    '));
+      if (tp.goals) lines.push('- Goals for this training block: ' + String(tp.goals).replace(/\n/g, '\n    '));
+      lines.push('');
+    }
     lines.push('## Training log (' + Store.state.tickets.length + ' days, ' + Store.state.sessions.length + ' sessions)');
     Store.sortedTickets(true).slice(0, 30).forEach((t) => {
       const sess = Store.sessionsOf(t.id);
@@ -252,7 +261,6 @@ window.Exporter = (function () {
     Store.state.assessments.slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).forEach((a) => {
       lines.push('- ' + (a.kind === 'baseline' ? 'Baseline' : 'Follow-up') + ' · ' + a.testName + ' · ' + a.date +
         ' · ' + (a.overallScore == null ? 'no score' : a.overallScore) + (a.scoreType ? ' (' + a.scoreType + ')' : ''));
-      if (a.preparation) lines.push('  · Training preparation: ' + String(a.preparation).replace(/\n/g, '\n    '));
       if (a.conclusions) lines.push('  · Session conclusions: ' + String(a.conclusions).replace(/\n/g, '\n    '));
     });
     lines.push('');

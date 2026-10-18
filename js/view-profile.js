@@ -22,10 +22,12 @@ window.ViewProfile = (function () {
     const wrap = el('<div class="page profile"></div>');
     wrap.appendChild(generalPanel());
     wrap.appendChild(plansPanel());
+    wrap.appendChild(trainingPrepPanel());
     wrap.appendChild(sensitivePanel());
     wrap.appendChild(notesSummaryPanel());
     wrap.appendChild(assessmentPanel('baseline', 'Baseline assessments', 'Pre-training cognitive assessments. Record the test as administered before training began.'));
     wrap.appendChild(assessmentPanel('followup', 'Post-training assessments', 'Assessments taken after (or during) training. Compare any of them against a baseline below.'));
+    wrap.appendChild(assessmentImagesPanel());
     wrap.appendChild(comparisonPanel());
     host.appendChild(wrap);
     bind(wrap, host);
@@ -89,6 +91,84 @@ window.ViewProfile = (function () {
       '</div>' +
       '<div class="hint mt">Planned exercise appears here; actually-logged sessions live in each daily ticket; specific workouts (minutes + workout type) live in the physical-activity field. The three are never merged.</div>' +
       '</section>');
+    return panel;
+  }
+
+  /* ---------- training preparation (own planning panel, independent of assessments) ---------- */
+
+  function trainingPrepPanel() {
+    const p = Store.state.profile || {};
+    const tp = Object.assign({ plan: '', conditions: '', goals: '', startDate: '' }, p.trainingPrep || {});
+    const panel = el('<section class="panel card">' +
+      '<div class="panel-head"><div><h2>Training preparation <span class="badge soft">plan</span></h2>' +
+      '<div class="panel-sub">Plan and organise your training here — independently of any assessment. ' +
+      'The preparation note no longer lives inside baseline assessments; this panel is its own space.</div></div>' +
+      (tp.startDate ? '<div class="panel-controls"><span class="badge soft">plan active since ' + esc(tp.startDate) + '</span></div>' : '') +
+      '</div>' +
+      '<div class="ed-grid">' +
+      '<div class="field span2"><label>Training plan &amp; schedule</label>' +
+      '<textarea rows="3" data-t="plan" placeholder="e.g. 4 sessions/week (Mon/Tue/Thu/Sat), 20–30 min each; Executive N-back at level 3, RRT once weekly…">' + esc(tp.plan) + '</textarea></div>' +
+      '<div class="field"><label>Preparation routine &amp; conditions</label>' +
+      '<textarea rows="3" data-t="conditions" placeholder="e.g. same quiet room, no caffeine within 3 h, 10-min warm-up, phone on silent…">' + esc(tp.conditions) + '</textarea></div>' +
+      '<div class="field"><label>Goals for this training block</label>' +
+      '<textarea rows="3" data-t="goals" placeholder="e.g. hold N-back level 3 at ≥80% accuracy for two consecutive weeks…">' + esc(tp.goals) + '</textarea></div>' +
+      '<div class="field"><label>Plan start date</label><input type="date" data-t="startDate" value="' + esc(tp.startDate) + '"></div>' +
+      '</div>' +
+      '<div class="hint mt">Stored with your profile and included in full JSON backups. Assessments no longer carry a preparation note — only session conclusions (follow-up) stay attached to an assessment.</div>' +
+      '</section>');
+    return panel;
+  }
+
+  /* ---------- assessment images (pre- and post-assessment evidence in one place) ---------- */
+
+  function assessmentImagesPanel() {
+    const panel = el('<section class="panel card">' +
+      '<div class="panel-head"><div><h2>Assessment images</h2>' +
+      '<div class="panel-sub">Every image uploaded as supporting evidence inside baseline and post-training assessments, displayed side by side. Click an image to view it full size.</div></div></div>' +
+      '</section>');
+    const groups = [
+      ['baseline', 'Baseline assessment images'],
+      ['followup', 'Post-training assessment images']
+    ];
+    let any = false;
+    groups.forEach((grp) => {
+      const block = el('<div class="aimg-block"></div>');
+      Store.assessmentsOfKind(grp[0])
+        .slice().sort((a, b) => String(b.date).localeCompare(String(a.date)))
+        .forEach((a) => {
+          const atts = Store.attachmentsOf('assessment', a.id);
+          if (!atts.length) return;
+          any = true;
+          const row = el('<div class="aimg-row"><div class="aimg-meta">' +
+            '<strong>' + esc(a.testName || 'Untitled test') + '</strong>' +
+            '<span>' + esc(U.fmtDateShort(a.date)) + '</span></div>' +
+            '<div class="aimg-grid"></div></div>');
+          const grid = row.querySelector('.aimg-grid');
+          atts.forEach((x) => {
+            const isImg = /^image\//.test(x.mime || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(x.name || '');
+            if (isImg && x.dataUrl) {
+              const th = el('<button class="aimg" type="button" title="' + esc(x.name) + '">' +
+                '<img loading="lazy" src="' + x.dataUrl + '" alt="' + esc(x.name) + '"></button>');
+              th.addEventListener('click', () => UI.viewImage(x.dataUrl, x.name));
+              grid.appendChild(th);
+            } else {
+              grid.appendChild(el('<span class="chip soft aimg-file" title="Not an image — open it from the assessment card">' +
+                Icons.svg('paperclip') + ' ' + esc(x.name) + '</span>'));
+            }
+          });
+          block.appendChild(row);
+        });
+      if (block.children.length) {
+        panel.appendChild(el('<div class="aimg-title">' + esc(grp[1]) + '</div>'));
+        panel.appendChild(block);
+      }
+    });
+    if (!any) {
+      panel.appendChild(el('<div class="empty small"><div class="empty-icon">' + Icons.svg('paperclip') + '</div>' +
+        '<h4>No assessment images yet</h4>' +
+        '<p>Upload supporting evidence (charts, screenshots, reports) inside a baseline or post-training assessment — ' +
+        'it will be displayed here in one place.</p></div>'));
+    }
     return panel;
   }
 
@@ -206,7 +286,6 @@ window.ViewProfile = (function () {
       '</ul>' +
       (subs.length ? '<div class="ac-subtests">' + subs.map((s) =>
         '<span class="sub">' + esc(s.name) + ': <strong>' + esc(s.value) + '</strong></span>').join('') + '</div>' : '') +
-      (a.preparation ? '<div class="ac-notes"><span class="acn-label">Training preparation</span>' + esc(a.preparation) + '</div>' : '') +
       (a.conclusions ? '<div class="ac-notes"><span class="acn-label">Session conclusions</span>' + esc(a.conclusions) + '</div>' : '') +
       (atts.length ? '<div class="ac-atts">' + atts.map((at) =>
         '<button class="chip" data-viewatt="' + esc(at.id) + '">' + Icons.svg('paperclip') + ' ' + esc(at.name) + '</button>').join('') + '</div>' : '') +
@@ -271,8 +350,9 @@ window.ViewProfile = (function () {
       '</tbody></table>');
     wrap.appendChild(table);
 
-    // dedicated context fields: baseline preparation & follow-up conclusions
-    if (b.preparation) wrap.appendChild(el('<div class="cmp-ctx"><strong>Baseline — training preparation</strong>' + esc(b.preparation) + '</div>'));
+    // context: the profile-level training-preparation plan & the follow-up's conclusions
+    const tpPlan = (((Store.state.profile || {}).trainingPrep) || {}).plan;
+    if (tpPlan) wrap.appendChild(el('<div class="cmp-ctx"><strong>Training preparation plan</strong>' + esc(tpPlan) + '</div>'));
     if (f.conclusions) wrap.appendChild(el('<div class="cmp-ctx"><strong>Follow-up — session conclusions</strong>' + esc(f.conclusions) + '</div>'));
 
     // subtest comparison when both have matching subtest names
@@ -347,6 +427,14 @@ window.ViewProfile = (function () {
         const plans = Object.assign({}, Store.state.profile.plans || {});
         plans[inp.dataset.l] = inp.value;
         await Store.saveProfile({ plans });
+      });
+    });
+    // training preparation (profile-level planning panel)
+    wrap.querySelectorAll('[data-t]').forEach((inp) => {
+      inp.addEventListener('change', async () => {
+        const tp = Object.assign({}, Store.state.profile.trainingPrep || {});
+        tp[inp.dataset.t] = inp.value;
+        await Store.saveProfile({ trainingPrep: tp });
       });
     });
     // sensitive
@@ -471,15 +559,11 @@ window.AssessmentEditor = (function () {
         '<div class="field"><label>Reliability (optional)</label><input type="number" step="0.01" min="0" max="1" data-a="reliability" placeholder="e.g. 0.96" value="' + esc(draft.reliability == null ? '' : draft.reliability) + '"></div>' +
         '<div class="field"><label>Reported g-loading (optional)</label><input type="number" step="0.01" data-a="gLoading" placeholder="leave blank if unknown" value="' + esc(draft.gLoading == null ? '' : draft.gLoading) + '"><div class="hint">Depends on the sample &amp; estimation method — never auto-filled.</div></div>' +
         '<div class="field span2"><label>Testing conditions / notes</label><textarea rows="2" data-a="notes" placeholder="quiet room, no time pressure, examiner…">' + esc(draft.notes || '') + '</textarea></div>' +
-        '<div class="field span2"><label>' + (draft.kind === 'baseline' ? 'Training preparation' : 'Session conclusions') + '</label>' +
-        '<textarea rows="2" data-a="' + (draft.kind === 'baseline' ? 'preparation' : 'conclusions') + '" placeholder="' +
         (draft.kind === 'baseline'
-          ? 'How you prepared for the training before this baseline — schedule, practice habits, sleep/caffeine protocol, life circumstances…'
-          : 'Conclusions from the training sessions — e.g. the premises reached for each RRT component, or the overall level achieved in Executive N-back…') +
-        '">' + esc((draft.kind === 'baseline' ? draft.preparation : draft.conclusions) || '') + '</textarea>' +
-        '<div class="hint">' + (draft.kind === 'baseline'
-          ? 'Baseline: record the preparation related to the training so later comparisons have context.'
-          : 'Follow-up: record what the training sessions concluded — kept separate from the test’s own notes.') + '</div></div>' +
+          ? '<div class="field span2"><div class="hint">' + Icons.svg('file') + ' Training preparation has its own panel on the Profile page — <strong>Training preparation</strong>, above. Plan and organise your training there, independently of any assessment.</div></div>'
+          : '<div class="field span2"><label>Session conclusions</label>' +
+            '<textarea rows="2" data-a="conclusions" placeholder="Conclusions from the training sessions — e.g. the premises reached for each RRT component, or the overall level achieved in Executive N-back…">' + esc(draft.conclusions || '') + '</textarea>' +
+            '<div class="hint">Follow-up: record what the training sessions concluded — kept separate from the test’s own notes.</div></div>') +
         '</div>'));
 
       const subWrap = el('<div class="subtests"><div class="obs-head">Subtest scores</div><div class="sub-list"></div>' +
@@ -564,7 +648,7 @@ window.AssessmentEditor = (function () {
           const f = inp.dataset.a;
           if (f === 'kind') {
             // collect every visible field first so nothing typed is lost, then re-render
-            // so the dedicated preparation/conclusions field follows the chosen type
+            // so the dedicated conclusions field (follow-up) follows the chosen type
             root.querySelectorAll('[data-a]').forEach((x) => { draft[x.dataset.a] = x.value; });
             draft.kind = inp.value;
             render();

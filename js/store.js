@@ -54,9 +54,30 @@ window.Store = (function () {
     return {
       name: '', age: '', birthYear: '', snapshots: [], gender: '', occupation: '', occupationCustom: '',
       plans: { exercise: '', frequency: '', diet: '', other: '', startDate: '' },
+      trainingPrep: { plan: '', conditions: '', goals: '', startDate: '' },
       sensitive: { notes: '' },
       createdAt: t, updatedAt: t
     };
+  }
+
+  /** Shape migration for profiles saved before the Training-preparation panel existed:
+     add the default shape, and carry over any legacy baseline-assessment "training
+     preparation" notes (the stored values stay on their records untouched; the panel
+     simply surfaces them again so nothing the user wrote is lost). */
+  async function ensureTrainingPrep() {
+    const p = state.profile;
+    if (!p || p.trainingPrep) return;
+    const tp = { plan: '', conditions: '', goals: '', startDate: '' };
+    const legacy = state.assessments
+      .filter((a) => a.preparation && String(a.preparation).trim())
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    if (legacy.length) {
+      tp.plan = legacy.map((a) =>
+        '[' + (a.date || 'undated') + (a.testName ? ' · ' + a.testName : '') + '] ' + String(a.preparation).trim()
+      ).join('\n\n');
+    }
+    p.trainingPrep = tp;
+    await DB.setMeta('profile', p);
   }
 
   async function seedDefaults() {
@@ -95,6 +116,7 @@ window.Store = (function () {
     state.assessments = assessments; state.attachments = attachments;
     const prof = await DB.getMeta('profile');
     state.profile = prof || defaultProfile();
+    await ensureTrainingPrep();
     if (!state.modes.length || !state.metrics.length) await seedDefaults();
   }
 
