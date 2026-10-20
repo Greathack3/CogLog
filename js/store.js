@@ -471,6 +471,7 @@ window.Store = (function () {
     const days = [];
     sortedTickets(false).forEach((t) => {
       const lines = [];
+      const images = [];
       const tNote = (t.notes || '').trim();
       if (tNote) lines.push({ kind: 'ticket', label: 'Day notes', text: tNote });
       const sl = t.sleep || {};
@@ -496,8 +497,16 @@ window.Store = (function () {
               text: oNote
             });
           });
+          // Images attached under this training session join the compiled document so
+          // the notes summary can show them next to the ticket's date (files belong
+          // to their session — ticket-level attachments no longer exist).
+          attachmentsOf('session', s.id).forEach((a) => {
+            const isImg = /^image\//.test(a.mime || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(a.name || '');
+            if (isImg && a.dataUrl) images.push({ id: a.id, name: a.name, dataUrl: a.dataUrl, label: label });
+          });
         });
-      if (lines.length) days.push({ date: t.date, createdAt: t.createdAt || null, lines });
+      // a day appears when it has notes or session images — images are never hidden
+      if (lines.length || images.length) days.push({ date: t.date, createdAt: t.createdAt || null, lines, images });
     });
     return days;
   }

@@ -136,7 +136,7 @@ session  │  1─n observation    own date + start/end time + mode
 observation n─1 metric         value + metricVersion (definition at time of record)
 metric   └─ version history[]  name/unit/type/direction/range/target
 assessment 1─n subtest         baseline | follow-up, psychometrics, attachments
-attachment  n─1 (ticket|session|assessment)
+attachment  n─1 (session|assessment)      files belong to their session or assessment
 ```
 
 A ticket is a **container** for a day: it can hold many sessions, each session many observations,
@@ -171,7 +171,9 @@ of many different metrics — including repeated sessions of the same mode on on
 - **Ticket editor** — collapsible sections; auto-populated but editable date; sleep (auto-computed
   from bed/wake, manual override); physical activity per specific workout (minutes, selectable
   workout type with suggestions, intensity); N training
-  sessions; multiple metrics per session; image/PDF attachments (images auto-downscaled).
+  sessions; multiple metrics per session; image/PDF attachments per session (images
+  auto-downscaled). Files belong to their training session — there are no ticket-level
+  attachments, and session images also surface in the Profile notes summary.
 - **Progress** — performance graph (one metric per Y-axis, coloured by mode, connect/trend
   toggles, click a point to open its source ticket), metric-version selector, descriptive
   statistics, five lifestyle charts (sleep, sleep/wake times, training duration,
@@ -201,8 +203,10 @@ of many different metrics — including repeated sessions of the same mode on on
 - **Ticket notes summary** — every note inside every daily ticket (day notes, sleep notes,
   physical-activity notes, per-session notes, per-observation notes) compiled into one
   date-stamped text document on the Profile page, with *copy to clipboard* and
-  *download as .txt*. The same compilation feeds the "Ticket notes" section of the shared
-  report, so panel and export always agree.
+  *download as .txt*. Images attached under a training session are displayed as thumbnails
+  inside the compiled document next to their ticket's date (click for the full-size viewer);
+  the text document and shared report list them by filename. The same compilation feeds the
+  "Ticket notes" section of the shared report, so panel and export always agree.
 - **Settings** — manage training modes (colour-consistent across all graphs) and metric definitions.
 - **Appearance** — seven curated themes (four light: Lumen, Sepia, Forest, Blush; three dark:
   Midnight, Graphite, Aurora) with signature accents, plus nine accent-colour overrides.
@@ -321,7 +325,8 @@ records and delete them; nothing mixes into your data.
 - Ticket notes summary: compiled document verified against live data — day, sleep,
   physical-activity, session, and observation notes all included with date + entry stamps,
   chronological order, note-less days excluded; copy-to-clipboard and `.txt` download capture
-  the exact 553-char document; the shared report's *Ticket notes* section matches the panel.
+  the exact document (including the "Session images (n): …" listing when present); the shared
+  report's *Ticket notes* section matches the panel.
 - Assessment fields: follow-up *session conclusions* render only for the follow-up kind
   (flipping the kind select swaps the field/hint and preserves uncommitted typed text),
   persist as `null` when empty, and appear on the cards, the side-by-side comparison, the
@@ -339,6 +344,12 @@ records and delete them; nothing mixes into your data.
   editor render as thumbnail grids grouped by kind and date; clicking opens the full-size
   viewer; non-image attachments show as file chips; an empty state appears with no evidence;
   deleting an assessment removes its row from the gallery.
+- Session images in the notes summary: images attached under a training session appear as
+  thumbnails inside the compiled notes document next to their ticket's date (click opens the
+  viewer); the copy/download `.txt` and the shared report list them by filename; a day with
+  images but no notes still appears in the compilation; ticket-level attachment UI is gone
+  (editor section, card chip counts session files only) while legacy ticket attachments are
+  preserved on their records and still cascade-deleted with their ticket.
 - Appearance: all 7 themes verified token-by-token (backgrounds, ink, lines, accents,
   `--on-accent`, topbar tint); accent overrides flip correctly between light and dark modes;
   the choice survives a full reload via the pre-paint localStorage mirror and the IndexedDB

@@ -197,8 +197,8 @@ window.ViewJournal = (function () {
       if (!m || o.value == null) return;
       highlights.push({ mode, m, o });
     });
-    const attCount = Store.attachmentsOf('ticket', t.id).length +
-      sessions.reduce((n, s) => n + Store.attachmentsOf('session', s.id).length, 0);
+    // ticket-level attachments no longer exist — files belong to their session
+    const attCount = sessions.reduce((n, s) => n + Store.attachmentsOf('session', s.id).length, 0);
 
     const card = el('<article class="ticket card" data-open="' + esc(t.id) + '" tabindex="0">' +
       '<div class="ticket-side">' +

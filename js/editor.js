@@ -73,7 +73,6 @@ window.Editor = (function () {
       root.appendChild(section('Physical activity', 'pa', paBody, true));
       root.appendChild(section('Training sessions', 'sessions', sessionsBody, true));
       root.appendChild(section('Daily notes', 'notes', notesBody, false));
-      root.appendChild(section('Ticket attachments', 'att', ticketAttBody, false));
       if (!draft.isNew) root.appendChild(metaLine());
       root.appendChild(footerRow());
       updateHints();
@@ -233,8 +232,9 @@ window.Editor = (function () {
         '</div>' +
         '<div class="obs-block"><div class="obs-head">Performance metrics <span class="hint-inline">recorded for this session only</span></div><div class="obs-list"></div>' +
         '<button class="btn tiny add" type="button" data-act="add-obs">+ Add metric</button></div>' +
-        '<div class="att-block"><div class="att-head">Session screenshots &amp; files</div><div class="thumbs" data-thumbs></div>' +
-        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label></div>' +
+        '<div class="att-block"><div class="att-head">Session screenshots &amp; files <span class="hint-inline">files belong to this session</span></div><div class="thumbs" data-thumbs></div>' +
+        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label>' +
+        '<div class="hint mt">Images attached here also appear on the Profile &amp; Assessments page next to this ticket’s date. Files are downscaled and stored inside your browser with the rest of the journal.</div></div>' +
         '</div>');
 
       const obsList = card.querySelector('.obs-list');
@@ -341,14 +341,6 @@ window.Editor = (function () {
 
     function notesBody() {
       return el('<div class="field"><textarea rows="4" data-t="notes" placeholder="Anything else about this day…">' + esc(draft.ticket.notes || '') + '</textarea></div>');
-    }
-
-    function ticketAttBody() {
-      const wrap = el('<div><div class="thumbs" data-thumbs></div>' +
-        '<label class="upload-btn">' + Icons.svg('paperclip') + ' Attach files to this day<input type="file" multiple accept="image/*,.pdf,.txt,.csv" data-upload hidden></label>' +
-        '<div class="hint mt">Images are downscaled and stored inside your browser with the rest of the journal.</div></div>');
-      renderThumbs(wrap, 'ticket', draft.ticket);
-      return wrap;
     }
 
     function renderThumbs(container, ownerType, ownerObj) {

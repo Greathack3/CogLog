@@ -247,13 +247,16 @@ window.Exporter = (function () {
     lines.push('');
     const noteDays = Store.compileTicketNotes();
     if (noteDays.length) {
-      lines.push('## Ticket notes (' + noteDays.length + ' day' + (noteDays.length === 1 ? '' : 's') + ' with notes)');
+      lines.push('## Ticket notes (' + noteDays.length + ' day' + (noteDays.length === 1 ? '' : 's') + ' with notes or session images)');
       noteDays.forEach((d) => {
         lines.push('- ' + d.date + (d.createdAt ? ' (entered ' + String(d.createdAt).slice(0, 16).replace('T', ' ') + ')' : ''));
         d.lines.forEach((ln) => {
           const segs = ln.text.split('\n');
           segs.forEach((seg, i) => { lines.push('  ' + (i === 0 ? '· ' + ln.label + ': ' : '  ') + seg); });
         });
+        if (d.images && d.images.length) {
+          lines.push('  · Session images (' + d.images.length + '): ' + d.images.map((im) => im.name).join(', '));
+        }
       });
       lines.push('');
     }

@@ -198,7 +198,7 @@ window.ViewProfile = (function () {
     const panel = el('<section class="panel card">' +
       '<div class="panel-head"><div><h2>Ticket notes summary</h2>' +
       '<div class="panel-sub">Every note written inside your daily tickets — day, sleep, activity, session, and per-metric notes — ' +
-      'compiled into one date-stamped text document.</div></div>' +
+      'compiled into one date-stamped text document. Images attached under a training session appear next to their ticket’s date; click one to view it full size.</div></div>' +
       (days.length ? '<div class="panel-controls">' +
         '<button class="btn" data-act="copynotes" title="Copy the compiled document to the clipboard">' + Icons.svg('copy') + ' Copy as text</button>' +
         '<button class="btn" data-act="downloadnotes" title="Download the compiled document as a .txt file">' + Icons.svg('download') + ' Download .txt</button></div>' : '') +
@@ -219,11 +219,21 @@ window.ViewProfile = (function () {
         day.appendChild(el('<div class="notes-line ' + esc(ln.kind) + '">' +
           '<span class="nl-label">' + esc(ln.label) + '</span>' + esc(ln.text) + '</div>'));
       });
+      if (d.images && d.images.length) {
+        const grid = el('<div class="notes-imgs"></div>');
+        d.images.forEach((im) => {
+          const th = el('<button class="aimg notes-img" type="button" title="' + esc(im.name + (im.label ? ' · ' + im.label : '')) + '">' +
+            '<img loading="lazy" src="' + im.dataUrl + '" alt="' + esc(im.name) + '"></button>');
+          th.addEventListener('click', () => UI.viewImage(im.dataUrl, im.name));
+          grid.appendChild(th);
+        });
+        day.appendChild(grid);
+      }
       doc.appendChild(day);
     });
     panel.appendChild(doc);
     panel.appendChild(el('<div class="hint mt">' + days.length + ' day' + (days.length === 1 ? '' : 's') +
-      ' with notes · compiled in chronological order (oldest first).</div>'));
+      ' with notes or session images · compiled in chronological order (oldest first).</div>'));
     return panel;
   }
 
@@ -239,6 +249,10 @@ window.ViewProfile = (function () {
         const segs = ln.text.split('\n');
         segs.forEach((seg, i) => { lines.push((i === 0 ? '  · ' + ln.label + ': ' : '    ') + seg); });
       });
+      if (d.images && d.images.length) {
+        lines.push('  · Session images (' + d.images.length + '): ' +
+          d.images.map((im) => im.name + (im.label ? ' [' + im.label + ']' : '')).join('; '));
+      }
       lines.push('');
     });
     return lines.join('\n');
